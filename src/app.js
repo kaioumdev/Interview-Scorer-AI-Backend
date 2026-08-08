@@ -77,6 +77,10 @@ app.get("/api/docs.json", (req, res) => {
     res.send(swaggerSpec)
 })
 
+app.get('/', (req, res) => {
+    res.send('Interview-Scorer — API docs available at /api-docs');
+});
+
 // ── Routes ────────────────────────────────────────────────────────────────────
 const authRouter = require("./routes/auth.routes")
 const interviewRouter = require("./routes/interview.routes")
