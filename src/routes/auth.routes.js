@@ -10,8 +10,12 @@ const authRouter = Router()
  *   post:
  *     summary: Register a new user account
  *     description: |
- *       Creates a new user account and immediately opens an authenticated session
- *       by setting an httpOnly `token` cookie (valid 24 h).
+ *       Creates a new user account and opens an authenticated session.
+ *
+ *       The server does two things on success:
+ *       1. Sets an **httpOnly `token` cookie** (used by the frontend app automatically)
+ *       2. Returns the **`token` in the response body** — copy this value and paste it into
+ *          the **Authorize 🔒** dialog above (bearerAuth field) to use protected endpoints here in Swagger
  *
  *       **Validation rules**
  *       - `username` — required, min 3 characters, must be unique
@@ -24,25 +28,31 @@ const authRouter = Router()
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/RegisterRequest'
- *           example:
- *             username: johndoe
- *             email: john@example.com
- *             password: secret123
+ *           examples:
+ *             newUser:
+ *               summary: Example new user
+ *               value:
+ *                 username: johndoe
+ *                 email: john@example.com
+ *                 password: secret123
  *     responses:
  *       201:
- *         description: Account created — session cookie is set automatically
+ *         description: |
+ *           Account created successfully.
+ *           **Copy the `token` from this response** and use it in the Authorize 🔒 dialog.
  *         headers:
  *           Set-Cookie:
- *             description: httpOnly session cookie `token` (24 h TTL)
+ *             description: httpOnly JWT cookie (24 h TTL) — set automatically for the browser
  *             schema:
  *               type: string
- *               example: token=eyJhbGciOiJIUzI1NiJ9...; HttpOnly; SameSite=Strict
+ *               example: "token=eyJhbGci...; Path=/; HttpOnly; SameSite=None; Secure"
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/AuthResponse'
  *             example:
  *               message: User registered successfully
+ *               token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2NGYxYTJiM2M0ZDVlNmY3YThiOWMwZCIsInVzZXJuYW1lIjoiam9obmRvZSIsImlhdCI6MTcxODQyMDAwMCwiZXhwIjoxNzE4NTA2NDAwfQ.example
  *               user:
  *                 id: 664f1a2b3c4d5e6f7a8b9c0d
  *                 username: johndoe
@@ -79,8 +89,21 @@ authRouter.post("/register", authController.registerUserController)
  *   post:
  *     summary: Log in to an existing account
  *     description: |
- *       Validates credentials and sets an httpOnly `token` cookie on success.
- *       The cookie must be included in all subsequent requests to protected endpoints.
+ *       Validates credentials and opens an authenticated session.
+ *
+ *       The server does two things on success:
+ *       1. Sets an **httpOnly `token` cookie** (used by the frontend app automatically)
+ *       2. Returns the **`token` in the response body** — copy this value and paste it into
+ *          the **Authorize 🔒** dialog above (bearerAuth field) to use protected endpoints here in Swagger
+ *
+ *       **How to use in Swagger UI:**
+ *       1. Click **Try it out**
+ *       2. Enter your email and password
+ *       3. Click **Execute**
+ *       4. From the response, copy the `token` value
+ *       5. Click **Authorize 🔒** at the top of this page
+ *       6. Paste into the **bearerAuth (http, Bearer)** field → click **Authorize**
+ *       7. All 🔒 endpoints will now work
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -88,24 +111,30 @@ authRouter.post("/register", authController.registerUserController)
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/LoginRequest'
- *           example:
- *             email: john@example.com
- *             password: secret123
+ *           examples:
+ *             existingUser:
+ *               summary: Example credentials
+ *               value:
+ *                 email: john@example.com
+ *                 password: secret123
  *     responses:
  *       200:
- *         description: Login successful — session cookie is set automatically
+ *         description: |
+ *           Login successful.
+ *           **Copy the `token` from this response** and use it in the Authorize 🔒 dialog.
  *         headers:
  *           Set-Cookie:
- *             description: httpOnly session cookie `token` (24 h TTL)
+ *             description: httpOnly JWT cookie (24 h TTL) — set automatically for the browser
  *             schema:
  *               type: string
- *               example: token=eyJhbGciOiJIUzI1NiJ9...; HttpOnly; SameSite=Strict
+ *               example: "token=eyJhbGci...; Path=/; HttpOnly; SameSite=None; Secure"
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/AuthResponse'
  *             example:
  *               message: User logged in successfully.
+ *               token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2NGYxYTJiM2M0ZDVlNmY3YThiOWMwZCIsInVzZXJuYW1lIjoiam9obmRvZSIsImlhdCI6MTcxODQyMDAwMCwiZXhwIjoxNzE4NTA2NDAwfQ.example
  *               user:
  *                 id: 664f1a2b3c4d5e6f7a8b9c0d
  *                 username: johndoe
@@ -141,13 +170,16 @@ authRouter.post("/login", authController.loginUserController)
  *     description: |
  *       Adds the current JWT to the server-side blacklist and clears the `token` cookie.
  *       Blacklisted tokens are auto-purged after 24 hours (matching the JWT expiry).
- *       After calling this endpoint the cookie is no longer accepted by the server.
+ *
+ *       After calling this endpoint, the token is no longer accepted — you will need
+ *       to login again and re-authorize in Swagger.
  *     tags: [Auth]
  *     security:
+ *       - bearerAuth: []
  *       - cookieAuth: []
  *     responses:
  *       200:
- *         description: Successfully logged out
+ *         description: Logged out successfully
  *         content:
  *           application/json:
  *             schema:
@@ -168,10 +200,14 @@ authRouter.post("/logout", authController.logoutUserController)
  *   get:
  *     summary: Get the currently authenticated user
  *     description: |
- *       Returns the profile of the user whose session cookie is present in the request.
- *       Useful for rehydrating client-side auth state on page load.
+ *       Returns the profile of the currently authenticated user.
+ *       Useful for verifying your token is working and for rehydrating
+ *       client-side auth state on page load.
+ *
+ *       **Requires authentication** — click Authorize 🔒 first.
  *     tags: [Auth]
  *     security:
+ *       - bearerAuth: []
  *       - cookieAuth: []
  *     responses:
  *       200:
@@ -179,7 +215,13 @@ authRouter.post("/logout", authController.logoutUserController)
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/AuthResponse'
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: User details fetched successfully
+ *                 user:
+ *                   $ref: '#/components/schemas/UserObject'
  *             example:
  *               message: User details fetched successfully
  *               user:
@@ -189,7 +231,7 @@ authRouter.post("/logout", authController.logoutUserController)
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       404:
- *         description: User account no longer exists
+ *         description: User account no longer exists in the database
  *         content:
  *           application/json:
  *             schema:

@@ -33,6 +33,7 @@ const interviewRouter = express.Router()
  *       **Rate limit:** 10 requests per hour per IP.
  *     tags: [Interview Reports]
  *     security:
+ *       - bearerAuth: []
  *       - cookieAuth: []
  *     requestBody:
  *       required: true
@@ -124,6 +125,7 @@ interviewRouter.post(
  *       `behavioralQuestions`, `skillGaps`, `preparationPlan`
  *     tags: [Interview Reports]
  *     security:
+ *       - bearerAuth: []
  *       - cookieAuth: []
  *     responses:
  *       200:
@@ -164,6 +166,7 @@ interviewRouter.get(
  *       user's report ID returns 404 (not 403) to avoid leaking resource existence.
  *     tags: [Interview Reports]
  *     security:
+ *       - bearerAuth: []
  *       - cookieAuth: []
  *     parameters:
  *       - in: path
@@ -219,6 +222,7 @@ interviewRouter.get(
  *       **Rate limit:** Shares the 10 requests/hour limit with other interview endpoints.
  *     tags: [Resume]
  *     security:
+ *       - bearerAuth: []
  *       - cookieAuth: []
  *     parameters:
  *       - in: path

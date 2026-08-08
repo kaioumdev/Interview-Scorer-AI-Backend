@@ -6,12 +6,14 @@ const asyncHandler = require("../utils/asyncHandler")
 
 const COOKIE_OPTIONS = {
     httpOnly: true,
-    // In production cookies must be SameSite=None + Secure so the browser
-    // sends them on cross-origin requests (frontend on Vercel → backend on Render/Railway).
-    // In local dev SameSite=Lax works fine without HTTPS.
     secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     maxAge: 24 * 60 * 60 * 1000   // 1 day in ms
+}
+
+// Helper — signs a JWT and returns the token string
+function signToken(payload) {
+    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1d" })
 }
 
 /**
@@ -37,15 +39,14 @@ const registerUserController = asyncHandler(async (req, res) => {
     const hash = await bcrypt.hash(password, 10)
     const user = await userModel.create({ username, email, password: hash })
 
-    const token = jwt.sign(
-        { id: user._id, username: user.username },
-        process.env.JWT_SECRET,
-        { expiresIn: "1d" }
-    )
+    const token = signToken({ id: user._id, username: user.username })
 
     res.cookie("token", token, COOKIE_OPTIONS)
     res.status(201).json({
         message: "User registered successfully",
+        // token is included so Swagger UI / API clients that can't read
+        // httpOnly cookies can still authenticate via Bearer header
+        token,
         user: { id: user._id, username: user.username, email: user.email }
     })
 })
@@ -71,15 +72,14 @@ const loginUserController = asyncHandler(async (req, res) => {
         return res.status(401).json({ message: "Invalid email or password" })
     }
 
-    const token = jwt.sign(
-        { id: user._id, username: user.username },
-        process.env.JWT_SECRET,
-        { expiresIn: "1d" }
-    )
+    const token = signToken({ id: user._id, username: user.username })
 
     res.cookie("token", token, COOKIE_OPTIONS)
     res.status(200).json({
         message: "User logged in successfully.",
+        // token is included so Swagger UI / API clients that can't read
+        // httpOnly cookies can still authenticate via Bearer header
+        token,
         user: { id: user._id, username: user.username, email: user.email }
     })
 })

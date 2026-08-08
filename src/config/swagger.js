@@ -23,18 +23,35 @@ interview preparation report containing:
 
 ---
 
-## Authentication
+## 🔐 How to Authenticate in Swagger UI
 
-All protected endpoints use **HTTP-only cookie authentication**.
+Since the app uses **httpOnly cookies** (unreadable by JavaScript), Swagger UI cannot access them directly.
+The login and register endpoints also return the token in the **response body** so you can authenticate here:
 
+### Step 1 — Register or Login
+Expand **Auth → POST /api/auth/register** or **POST /api/auth/login**, click **Try it out**,
+fill in your credentials and click **Execute**.
+
+### Step 2 — Copy the token
+From the response body, copy the value of the **\`token\`** field.
+
+### Step 3 — Authorize
+Click the **Authorize 🔒** button at the top of this page.
+In the **bearerAuth** row, paste your token and click **Authorize**.
+
+### Step 4 — Use protected endpoints
+All endpoints marked with a 🔒 lock icon will now work automatically.
+The token is valid for **24 hours**.
+
+---
+
+## Authentication (How the App Works)
+
+The frontend app uses **HTTP-only cookie authentication**:
 1. Call \`POST /api/auth/register\` or \`POST /api/auth/login\`
-2. The server sets a \`token\` cookie automatically — your HTTP client must send cookies with every
-   subsequent request (\`withCredentials: true\` in Axios / \`credentials: 'include'\` in fetch)
-3. The cookie is \`httpOnly\` (unreadable by JavaScript) and expires after **24 hours**
-4. To end the session call \`POST /api/auth/logout\` — the token is immediately blacklisted
-
-> **Swagger UI note:** click the **Authorize 🔒** button and tick *cookieAuth* after logging in via
-> the login endpoint to have the browser send the session cookie automatically.
+2. The server sets a \`token\` cookie automatically
+3. Every subsequent request from the browser sends the cookie automatically
+4. To end the session call \`POST /api/auth/logout\` — the token is blacklisted server-side
 
 ---
 
@@ -75,6 +92,10 @@ All error responses share the same shape:
                         description: "Backend port (set via PORT env variable)"
                     }
                 }
+            },
+            {
+                url: "https://interview-scorer-ai-backend.vercel.app",
+                description: "Production server (Vercel)"
             }
         ],
         tags: [
@@ -103,8 +124,19 @@ All error responses share the same shape:
                     in: "cookie",
                     name: "token",
                     description:
-                        "JWT stored as an httpOnly cookie. Obtained automatically after login or register. " +
-                        "The cookie is valid for 24 hours."
+                        "JWT stored as an **httpOnly cookie**. Set automatically after login/register. " +
+                        "Used by the frontend app. **Cannot be used in Swagger UI** because browsers " +
+                        "block JavaScript from reading httpOnly cookies."
+                },
+                bearerAuth: {
+                    type: "http",
+                    scheme: "bearer",
+                    bearerFormat: "JWT",
+                    description:
+                        "**Use this in Swagger UI.** After calling `/api/auth/login` or `/api/auth/register`, " +
+                        "copy the `token` value from the response body, click the **Authorize 🔒** button " +
+                        "at the top of this page, paste the token into the **bearerAuth** field and click Authorize. " +
+                        "All protected endpoints will then work automatically."
                 }
             },
             schemas: {
@@ -175,6 +207,14 @@ All error responses share the same shape:
                         message: {
                             type: "string",
                             example: "User logged in successfully."
+                        },
+                        token: {
+                            type: "string",
+                            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                            description:
+                                "JWT token — also set as an httpOnly cookie automatically. " +
+                                "Copy this value and use it in the Authorize 🔒 dialog (bearerAuth) " +
+                                "to authenticate all protected Swagger endpoints."
                         },
                         user: {
                             $ref: "#/components/schemas/UserObject"
