@@ -18,11 +18,13 @@ const allowedOrigins = process.env.CLIENT_ORIGIN
 
 app.use(cors({
     origin: (origin, cb) => {
-        // Allow requests with no origin (e.g. curl, Postman)
+        // Allow requests with no origin (curl, Postman, same-origin)
         if (!origin || allowedOrigins.includes(origin)) return cb(null, true)
         cb(new Error("Not allowed by CORS"))
     },
-    credentials: true
+    credentials: true,
+    // Required for SameSite=None cookies to work cross-origin
+    exposedHeaders: ["set-cookie"]
 }))
 
 // ── Rate limiting ─────────────────────────────────────────────────────────────

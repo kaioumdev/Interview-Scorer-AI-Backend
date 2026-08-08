@@ -5,10 +5,13 @@ const tokenBlacklistModel = require("../models/blacklist.model")
 const asyncHandler = require("../utils/asyncHandler")
 
 const COOKIE_OPTIONS = {
-    httpOnly: true,                                // JS cannot read — prevents XSS token theft
-    secure: process.env.NODE_ENV === "production", // HTTPS-only in prod
-    sameSite: "strict",
-    maxAge: 24 * 60 * 60 * 1000                   // 1 day in ms
+    httpOnly: true,
+    // In production cookies must be SameSite=None + Secure so the browser
+    // sends them on cross-origin requests (frontend on Vercel → backend on Render/Railway).
+    // In local dev SameSite=Lax works fine without HTTPS.
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge: 24 * 60 * 60 * 1000   // 1 day in ms
 }
 
 /**
