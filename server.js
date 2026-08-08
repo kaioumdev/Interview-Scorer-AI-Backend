@@ -6,6 +6,13 @@ const PORT = process.env.PORT || 3000
 
 connectToDB()
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`)
-})
+// For local development — start the HTTP server
+// Vercel ignores app.listen() and uses the module.exports instead
+if (process.env.NODE_ENV !== "production") {
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`)
+    })
+}
+
+// Required for Vercel serverless deployment
+module.exports = app
