@@ -80,7 +80,7 @@ app.get("/api/docs.json", (req, res) => {
 })
 
 app.get('/', (req, res) => {
-    res.send('Interview-Scorer — API docs available at /api-docs');
+    res.send('Interview-Scorer — API docs available at /api/docs');
 });
 
 // ── Routes ────────────────────────────────────────────────────────────────────
