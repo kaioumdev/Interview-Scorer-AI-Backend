@@ -12,9 +12,16 @@ app.use(express.json())
 app.use(cookieParser())
 
 // ── CORS ─────────────────────────────────────────────────────────────────────
-const allowedOrigins = process.env.CLIENT_ORIGIN
-    ? process.env.CLIENT_ORIGIN.split(",")
-    : ["https://interview-scorer-ai-frontend.vercel.app", "http://localhost:5173"]
+const allowedOrigins = (process.env.CLIENT_ORIGIN || "")
+    .split(",")
+    .map(o => o.trim())
+    .filter(Boolean)
+    .concat(
+        process.env.NODE_ENV !== "production"
+            ? ["http://localhost:5173"]
+            : []
+    )
+    .concat(["https://interview-scorer-ai-frontend.vercel.app"])
 
 app.use(cors({
     origin: (origin, cb) => {
