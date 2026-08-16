@@ -5,6 +5,7 @@ const rateLimit = require("express-rate-limit")
 const { setupSwagger } = require("./config/swagger")
 
 const app = express()
+app.set('trust proxy', 1)
 
 // ── Body / cookie parsing ────────────────────────────────────────────────────
 app.use(express.json())
