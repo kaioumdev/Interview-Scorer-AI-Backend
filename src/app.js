@@ -2,8 +2,7 @@ const express = require("express")
 const cookieParser = require("cookie-parser")
 const cors = require("cors")
 const rateLimit = require("express-rate-limit")
-const swaggerUi = require("swagger-ui-express")
-const swaggerSpec = require("./config/swagger")
+const { setupSwagger } = require("./config/swagger")
 
 const app = express()
 
@@ -54,29 +53,30 @@ app.use("/api/interview", rateLimit({
 }))
 
 // ── Swagger UI — available at /api/docs ───────────────────────────────────────
-const swaggerUiOptions = {
-    customSiteTitle: "InterviewAI API Docs",
-    customCss: `
-        .topbar { background-color: #161b22; }
-        .topbar-wrapper img { content: url(''); width: 0; }
-        .topbar-wrapper::before {
-            content: '⭐ InterviewAI API';
-            color: #ff2d78;
-            font-size: 1.1rem;
-            font-weight: 700;
-            padding-left: 1rem;
-        }
-        .swagger-ui .info .title { color: #e6edf3; }
-        .swagger-ui .scheme-container { background: #161b22; padding: 1rem; }
-    `,
-    swaggerOptions: {
-        persistAuthorization: true,         // remember auth across page reloads
-        displayRequestDuration: true,       // show how long each request took
-        docExpansion: "none",               // start collapsed for cleaner UX
-        filter: true,                       // enable the search/filter bar
-        tryItOutEnabled: true               // "Try it out" open by default
-    }
-}
+setupSwagger(app)
+// const swaggerUiOptions = {
+//     customSiteTitle: "InterviewAI API Docs",
+//     customCss: `
+//         .topbar { background-color: #161b22; }
+//         .topbar-wrapper img { content: url(''); width: 0; }
+//         .topbar-wrapper::before {
+//             content: '⭐ InterviewAI API';
+//             color: #ff2d78;
+//             font-size: 1.1rem;
+//             font-weight: 700;
+//             padding-left: 1rem;
+//         }
+//         .swagger-ui .info .title { color: #e6edf3; }
+//         .swagger-ui .scheme-container { background: #161b22; padding: 1rem; }
+//     `,
+//     swaggerOptions: {
+//         persistAuthorization: true,         // remember auth across page reloads
+//         displayRequestDuration: true,       // show how long each request took
+//         docExpansion: "none",               // start collapsed for cleaner UX
+//         filter: true,                       // enable the search/filter bar
+//         tryItOutEnabled: true               // "Try it out" open by default
+//     }
+// }
 
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions))
 

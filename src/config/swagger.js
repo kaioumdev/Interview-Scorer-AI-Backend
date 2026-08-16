@@ -449,4 +449,76 @@ All error responses share the same shape:
 
 const swaggerSpec = swaggerJsdoc(options)
 
-module.exports = swaggerSpec
+// ── এই অংশটুকু আগের `const swaggerSpec = swaggerJsdoc(options)` এর ঠিক পরে,
+//    আর `module.exports = swaggerSpec` এর বদলে বসান ──────────────────────────
+
+const SWAGGER_UI_VERSION = "5.18.2"
+const CDN_BASE = `https://cdn.jsdelivr.net/npm/swagger-ui-dist@${SWAGGER_UI_VERSION}`
+
+function buildSwaggerHtml(specUrl) {
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InterviewAI API Docs</title>
+  <link rel="stylesheet" href="${CDN_BASE}/swagger-ui.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0d1117; }
+    .topbar { background-color: #161b22; }
+    .swagger-ui .topbar-wrapper img { display: none; }
+    .swagger-ui .topbar-wrapper::before {
+      content: '⭐ InterviewAI API';
+      color: #ff2d78;
+      font-size: 1.1rem;
+      font-weight: 700;
+      padding-left: 1rem;
+    }
+    .swagger-ui .info .title { color: #e6edf3; }
+    .swagger-ui .info p, .swagger-ui .info li, .swagger-ui .info table { color: #c9d1d9; }
+    .swagger-ui .scheme-container { background: #161b22; padding: 1rem; box-shadow: none; }
+    .swagger-ui .opblock-tag { color: #e6edf3; border-color: rgba(255,255,255,0.08); }
+    .swagger-ui select, .swagger-ui input[type=text], .swagger-ui textarea {
+      background: #0d1117; color: #e6edf3; border: 1px solid rgba(255,255,255,0.15);
+    }
+  </style>
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="${CDN_BASE}/swagger-ui-bundle.js"></script>
+  <script src="${CDN_BASE}/swagger-ui-standalone-preset.js"></script>
+  <script>
+    window.onload = function () {
+      SwaggerUIBundle({
+        url: "${specUrl}",
+        dom_id: '#swagger-ui',
+        presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+        layout: "StandaloneLayout",
+        persistAuthorization: true,
+        displayRequestDuration: true,
+        docExpansion: "none",
+        filter: true,
+        tryItOutEnabled: true,
+      });
+    };
+  </script>
+</body>
+</html>`
+}
+
+function setupSwagger(app) {
+    app.get("/api/docs.json", (req, res) => {
+        res.setHeader("Content-Type", "application/json")
+        res.send(swaggerSpec)
+    })
+
+    app.get("/api/docs", (req, res) => {
+        res.setHeader("Content-Type", "text/html")
+        res.send(buildSwaggerHtml("/api/docs.json"))
+    })
+
+    app.get("/api/docs/", (req, res) => res.redirect("/api/docs"))
+}
+
+module.exports = { setupSwagger, swaggerSpec }
