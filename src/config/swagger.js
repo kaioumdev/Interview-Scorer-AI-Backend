@@ -463,25 +463,38 @@ function buildSwaggerHtml(specUrl) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>InterviewAI API Docs</title>
   <link rel="stylesheet" href="${CDN_BASE}/swagger-ui.css" />
+//   <style>
+//     * { box-sizing: border-box; margin: 0; padding: 0; }
+//     body { background: #0d1117; }
+//     .topbar { background-color: #161b22; }
+//     .swagger-ui .topbar-wrapper img { display: none; }
+//     .swagger-ui .topbar-wrapper::before {
+//       content: '⭐ InterviewAI API';
+//       color: #ff2d78;
+//       font-size: 1.1rem;
+//       font-weight: 700;
+//       padding-left: 1rem;
+//     }
+//     .swagger-ui .info .title { color: #e6edf3; }
+//     .swagger-ui .info p, .swagger-ui .info li, .swagger-ui .info table { color: #c9d1d9; }
+//     .swagger-ui .scheme-container { background: #161b22; padding: 1rem; box-shadow: none; }
+//     .swagger-ui .opblock-tag { color: #e6edf3; border-color: rgba(255,255,255,0.08); }
+//     .swagger-ui select, .swagger-ui input[type=text], .swagger-ui textarea {
+//       background: #0d1117; color: #e6edf3; border: 1px solid rgba(255,255,255,0.15);
+//     }
+//   </style>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #0d1117; }
-    .topbar { background-color: #161b22; }
-    .swagger-ui .topbar-wrapper img { display: none; }
-    .swagger-ui .topbar-wrapper::before {
-      content: '⭐ InterviewAI API';
-      color: #ff2d78;
-      font-size: 1.1rem;
-      font-weight: 700;
-      padding-left: 1rem;
-    }
-    .swagger-ui .info .title { color: #e6edf3; }
-    .swagger-ui .info p, .swagger-ui .info li, .swagger-ui .info table { color: #c9d1d9; }
-    .swagger-ui .scheme-container { background: #161b22; padding: 1rem; box-shadow: none; }
-    .swagger-ui .opblock-tag { color: #e6edf3; border-color: rgba(255,255,255,0.08); }
-    .swagger-ui select, .swagger-ui input[type=text], .swagger-ui textarea {
-      background: #0d1117; color: #e6edf3; border: 1px solid rgba(255,255,255,0.15);
-    }
+    body { background: #fafafa; }
+    html { overflow-y: scroll; }
+    .swagger-ui .topbar { background-color: #1e293b !important; }
+    .swagger-ui .info .title { color: #1e293b; font-size: 2rem; }
+    .swagger-ui .scheme-container { background: #f8fafc; padding: 12px 20px; }
+    .swagger-ui .opblock.opblock-get    .opblock-summary-method { background: #3b82f6; }
+    .swagger-ui .opblock.opblock-post   .opblock-summary-method { background: #22c55e; }
+    .swagger-ui .opblock.opblock-put    .opblock-summary-method { background: #f59e0b; }
+    .swagger-ui .opblock.opblock-delete .opblock-summary-method { background: #ef4444; }
+    .swagger-ui .topbar .download-url-wrapper { display: none; }
   </style>
 </head>
 <body>
